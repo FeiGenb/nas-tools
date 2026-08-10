@@ -43,8 +43,9 @@ class Qbittorrent(_IDownloadClient):
         self.connect()
         # 种子自动管理模式，根据下载路径设置为下载器设置分类
         self.init_torrent_management()
-        # 设置未完成种子添加!qb后缀
-        self.qbc.app_set_preferences({"incomplete_files_ext": True})
+        if self.qbc:
+            # 设置未完成种子添加!qb后缀 / Set incomplete torrent suffix !qb
+            self.qbc.app_set_preferences({"incomplete_files_ext": True})
 
     def init_config(self):
         if self._client_config:
@@ -72,11 +73,11 @@ class Qbittorrent(_IDownloadClient):
 
     def __login_qbittorrent(self):
         """
-        连接qbittorrent
-        :return: qbittorrent对象
+        连接qbittorrent / Connect to qBittorrent
+        :return: qbittorrent对象，登录失败返回None / qBittorrent client, None if login failed
         """
         try:
-            # 登录
+            # 登录 / Login
             qbt = qbittorrentapi.Client(host=self.host,
                                         port=self.port,
                                         username=self.username,
@@ -87,10 +88,11 @@ class Qbittorrent(_IDownloadClient):
                 qbt.auth_log_in()
                 self.ver = qbt.app_version()
             except qbittorrentapi.LoginFailed as e:
-                log.exception(f"【{self.client_name}】{self.name} 登录出错：")
+                log.error(f"【{self.client_name}】{self.name} 登录出错：{str(e)}")
+                return None
             return qbt
         except Exception as err:
-            log.exception(f"【{self.client_name}】{self.name} 连接出错：")
+            log.error(f"【{self.client_name}】{self.name} 连接出错：{type(err).__name__}: {str(err)}")
             return None
 
     def get_status(self):
