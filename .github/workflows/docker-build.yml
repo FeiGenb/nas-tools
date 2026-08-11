@@ -72,6 +72,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:dev
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:dev-${{ env.app_version }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:dev-${{ env.build_date }}
