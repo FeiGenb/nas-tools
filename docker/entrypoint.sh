@@ -83,8 +83,6 @@ usermod -o -u "$PUID" nt
 chown -R nt:nt "${WORKDIR}" "${HOME}" /etc/hosts /tmp /ms-playwright
 # export PATH=${PATH}:/usr/lib/chromium
 # gosu nt:nt playwright install chromium
-# 执行扩展脚本
-exec "$@"
 
 # 掩码设置
 umask "${UMASK}"
