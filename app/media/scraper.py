@@ -9,6 +9,7 @@ import log
 from app.conf import SystemConfig, ModuleConf
 from app.helper import FfmpegHelper
 from app.media import Media
+from app.media.fanart import Fanart
 from app.media.douban import DouBan
 from app.media.meta import MetaInfo
 from app.utils.commons import retry
@@ -33,6 +34,7 @@ class Scraper:
             self._scraper_nfo = scraper_conf.get('scraper_nfo') or {}
             self._scraper_pic = scraper_conf.get('scraper_pic') or {}
         self._rmt_mode = None
+        self._fanart = Fanart()
         self._temp_path = os.path.join(Config().get_temp_path(), "scraper")
         if not os.path.exists(self._temp_path):
             os.makedirs(self._temp_path)
@@ -504,27 +506,27 @@ class Scraper:
                         self.__save_image(backdrop_image, dir_path, "fanart", force_pic)
                 # background
                 if scraper_movie_pic.get("background"):
-                    background_image = media.fanart.get_background(media_type=media.type, queryid=media.tmdb_id)
+                    background_image = self._fanart.get_background(media_type=media.type, queryid=media.tmdb_id)
                     if background_image:
                         self.__save_image(background_image, dir_path, "background", force_pic)
                 # logo
                 if scraper_movie_pic.get("logo"):
-                    logo_image = media.fanart.get_logo(media_type=media.type, queryid=media.tmdb_id)
+                    logo_image = self._fanart.get_logo(media_type=media.type, queryid=media.tmdb_id)
                     if logo_image:
                         self.__save_image(logo_image, dir_path, "logo", force_pic)
                 # disc
                 if scraper_movie_pic.get("disc"):
-                    disc_image = media.fanart.get_disc(media_type=media.type, queryid=media.tmdb_id)
+                    disc_image = self._fanart.get_disc(media_type=media.type, queryid=media.tmdb_id)
                     if disc_image:
                         self.__save_image(disc_image, dir_path, "disc", force_pic)
                 # banner
                 if scraper_movie_pic.get("banner"):
-                    banner_image = media.fanart.get_banner(media_type=media.type, queryid=media.tmdb_id)
+                    banner_image = self._fanart.get_banner(media_type=media.type, queryid=media.tmdb_id)
                     if banner_image:
                         self.__save_image(banner_image, dir_path, "banner", force_pic)
                 # thumb
                 if scraper_movie_pic.get("thumb"):
-                    thumb_image = media.fanart.get_thumb(media_type=media.type, queryid=media.tmdb_id)
+                    thumb_image = self._fanart.get_thumb(media_type=media.type, queryid=media.tmdb_id)
                     if thumb_image:
                         self.__save_image(thumb_image, dir_path, "thumb", force_pic)
             # 电视剧
@@ -557,27 +559,27 @@ class Scraper:
                         self.__save_image(backdrop_image, os.path.dirname(dir_path), "fanart", force_pic)
                 # background
                 if scraper_tv_pic.get("background"):
-                    background_image = media.fanart.get_background(media_type=media.type, queryid=media.tvdb_id)
+                    background_image = self._fanart.get_background(media_type=media.type, queryid=media.tvdb_id)
                     if background_image:
                         self.__save_image(background_image, os.path.dirname(dir_path), "background", force_pic)
                 # logo
                 if scraper_tv_pic.get("logo"):
-                    logo_image = media.fanart.get_logo(media_type=media.type, queryid=media.tvdb_id)
+                    logo_image = self._fanart.get_logo(media_type=media.type, queryid=media.tvdb_id)
                     if logo_image:
                         self.__save_image(logo_image, os.path.dirname(dir_path), "logo", force_pic)
                 # clearart
                 if scraper_tv_pic.get("clearart"):
-                    clearart_image = media.fanart.get_disc(media_type=media.type, queryid=media.tvdb_id)
+                    clearart_image = self._fanart.get_disc(media_type=media.type, queryid=media.tvdb_id)
                     if clearart_image:
                         self.__save_image(clearart_image, os.path.dirname(dir_path), "clearart", force_pic)
                 # banner
                 if scraper_tv_pic.get("banner"):
-                    banner_image = media.fanart.get_banner(media_type=media.type, queryid=media.tvdb_id)
+                    banner_image = self._fanart.get_banner(media_type=media.type, queryid=media.tvdb_id)
                     if banner_image:
                         self.__save_image(banner_image, os.path.dirname(dir_path), "banner", force_pic)
                 # thumb
                 if scraper_tv_pic.get("thumb"):
-                    thumb_image = media.fanart.get_thumb(media_type=media.type, queryid=media.tvdb_id)
+                    thumb_image = self._fanart.get_thumb(media_type=media.type, queryid=media.tvdb_id)
                     if thumb_image:
                         self.__save_image(thumb_image, os.path.dirname(dir_path), "thumb", force_pic)
                 # season nfo
@@ -608,7 +610,7 @@ class Scraper:
                 # season poster
                 if scraper_tv_pic.get("season_poster"):
                     season_poster = "season%s-poster" % media.get_season_seq().rjust(2, '0')
-                    seasonposter = media.fanart.get_seasonposter(media_type=media.type,
+                    seasonposter = self._fanart.get_seasonposter(media_type=media.type,
                                                                  queryid=media.tvdb_id,
                                                                  season=media.get_season_seq())
                     if seasonposter:
@@ -627,7 +629,7 @@ class Scraper:
                                               force_pic)
                 # season banner
                 if scraper_tv_pic.get("season_banner"):
-                    seasonbanner = media.fanart.get_seasonbanner(media_type=media.type,
+                    seasonbanner = self._fanart.get_seasonbanner(media_type=media.type,
                                                                  queryid=media.tvdb_id,
                                                                  season=media.get_season_seq())
                     if seasonbanner:
@@ -637,7 +639,7 @@ class Scraper:
                                           force_pic)
                 # season thumb
                 if scraper_tv_pic.get("season_thumb"):
-                    seasonthumb = media.fanart.get_seasonthumb(media_type=media.type,
+                    seasonthumb = self._fanart.get_seasonthumb(media_type=media.type,
                                                                queryid=media.tvdb_id,
                                                                season=media.get_season_seq())
                     if seasonthumb:
