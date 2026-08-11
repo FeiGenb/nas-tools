@@ -26,6 +26,10 @@ RUN apt-get update -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 安装 Python 依赖（先复制 requirements 利用 Docker 缓存）
+# 默认用清华镜像，CI 构建时自动覆盖为官方源
+ARG PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ENV PIP_INDEX_URL=${PIP_INDEX_URL}
+
 COPY requirements.txt /tmp/requirements.txt
 COPY package_list.txt /tmp/package_list.txt
 

@@ -1,0 +1,12 @@
+{
+    "python.defaultInterpreterPath": "python3",
+    "python.analysis.extraPaths": [
+        "./app",
+        "./"
+    ],
+    "files.exclude": {
+        "**/__pycache__": true
+    },
+    "editor.rulers": [100],
+    "files.encoding": "utf8"
+}
