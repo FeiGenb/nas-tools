@@ -100,6 +100,9 @@ def check_password_hash(pwhash: str, password: str) -> bool:
     .. versionchanged:: 2.3
         All plain hashes are deprecated and will not be supported in Werkzeug 3.0.
     """
+    # 兼容旧版 [hash] 前缀 / Compatible with legacy [hash] prefix
+    if pwhash.startswith("[hash]"):
+        pwhash = pwhash[6:]
     try:
         method, salt, hashval = pwhash.split("$", 2)
     except ValueError:
