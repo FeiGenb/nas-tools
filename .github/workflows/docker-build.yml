@@ -7,6 +7,7 @@ on:
       - dev/feigenb-v1
       - master
     paths:
+      - VERSION
       - version.py
       - requirements.txt
       - package_list.txt
@@ -37,9 +38,11 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          APP_VERSION=$(cat version.py | sed -ne "s/APP_VERSION\s=\s'v\(.*\)'/\1/gp")
-          echo "app_version=${APP_VERSION}" >> $GITHUB_ENV
+          # 从 VERSION 文件读取三段式版本号 / Read semver from VERSION file
+          DOCKER_VERSION=$(grep -E '^[0-9]+\.[0-9]+\.[0-9]+' VERSION | head -1)
+          echo "docker_version=${DOCKER_VERSION}" >> $GITHUB_ENV
           echo "build_date=$(date +'%Y%m%d')" >> $GITHUB_ENV
+          echo "Docker version: ${DOCKER_VERSION}"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -74,5 +77,5 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:dev
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:dev-${{ env.app_version }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ env.docker_version }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:dev-${{ env.build_date }}
