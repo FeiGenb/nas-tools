@@ -29,7 +29,7 @@ RUN apt-get update -y \
 COPY requirements.txt /tmp/requirements.txt
 COPY package_list.txt /tmp/package_list.txt
 
-RUN pip install --no-cache-dir --upgrade pip setuptools==70.1.1 wheel \
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
     && pip install --no-cache-dir cython \
     && pip install --no-cache-dir playwright \
     && python -m playwright install chromium \
@@ -40,7 +40,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools==70.1.1 wheel \
     && rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/* /root/.cache
 
 # 复制 rootfs（如存在）
-COPY docker/rootfs /rootfs 2>/dev/null; true
+COPY docker/rootfs/ /rootfs/
 
 FROM base AS final
 
