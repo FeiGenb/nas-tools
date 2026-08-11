@@ -481,7 +481,8 @@ class AutoSignIn(_IPluginModule):
 
             if results.failed_info:
                 text_parts.append(f"🟢签到失败站点:")
-                text_parts.append(f"{'\t\n'.join(results.failed_info)}")
+                failed_list = '\t\n'.join(results.failed_info)
+                text_parts.append(f"{failed_list}")
             else:
                 text_parts.append("🟢签到失败站点: 无")
 
