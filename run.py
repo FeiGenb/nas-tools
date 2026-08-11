@@ -93,7 +93,6 @@ def get_run_config(app: FastAPI) -> uvicorn.Config:
 def set_git_proxy():
     """
     设置 Git HTTP/HTTPS 代理 / Set Git HTTP/HTTPS proxy
-    使用临时 gitconfig 避免容器内 $HOME 权限问题
     """
     proxy_config = Config().get_proxies()
     if not proxy_config:
@@ -103,16 +102,11 @@ def set_git_proxy():
         return
     
     try:
-        import subprocess, os, tempfile
-
-        # 使用临时 gitconfig 避免 /nt/.gitconfig 权限问题
-        # Use temp gitconfig to avoid permission issues with /nt/.gitconfig
-        gitconfig = os.path.join(tempfile.gettempdir(), '.gitconfig-nastool')
-        env = {**os.environ, 'GIT_CONFIG_GLOBAL': gitconfig}
+        import subprocess
 
         # 设置 http.proxy
         result = subprocess.run(
-            ['git', 'config', '--file', gitconfig, 'http.proxy', http_proxy],
+            ['git', 'config', '--global', 'http.proxy', http_proxy],
             capture_output=True, text=True
         )
         if result.returncode != 0:
@@ -122,7 +116,7 @@ def set_git_proxy():
         # 设置 https.proxy
         https_proxy = proxy_config.get('https', http_proxy)
         result = subprocess.run(
-            ['git', 'config', '--file', gitconfig, 'https.proxy', https_proxy],
+            ['git', 'config', '--global', 'https.proxy', https_proxy],
             capture_output=True, text=True
         )
         if result.returncode != 0:
