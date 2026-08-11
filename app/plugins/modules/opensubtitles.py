@@ -1,7 +1,6 @@
 import os
 import shutil
 
-from cachetools import TTLCache, cached
 from pyquery import PyQuery
 from playwright.sync_api import Page
 from urllib.parse import quote
@@ -206,7 +205,6 @@ class OpenSubtitles(_IPluginModule):
         return self.__parse_opensubtitles_results(url=self._url_keyword % quote(keyword))
 
     @classmethod
-    @cached(cache=TTLCache(maxsize=512, ttl=3600))
     def __parse_opensubtitles_results(cls, url):
         """
         搜索并解析结果
@@ -214,9 +212,23 @@ class OpenSubtitles(_IPluginModule):
 
         def __page_handler(page: Page)-> list: 
 
-           # 访问页面
+            # 访问页面
             if not page:
                 return []
+            # 等待反爬检测通过 / Wait for anti-bot challenge to pass
+            try:
+                # Xess 反爬检测特征 / Xess anti-bot challenge signature
+                if "Making sure you're not a bot" in page.content():
+                    log.info(f"【OpenSubtitles】检测到反爬页面，等待中...")
+                    # 等待页面自动跳转到实际内容（最长15秒）
+                    page.wait_for_url(
+                        lambda u: "within.website" not in u,
+                        timeout=15000
+                    )
+                    log.info(f"【OpenSubtitles】反爬检测通过，当前URL: {page.url}")
+            except Exception as e:
+                log.warn(f"【OpenSubtitles】等待反爬超时或失败: {str(e)}")
+                # 超时也继续尝试解析——可能页面已加载
             # 源码
             html_text = page.content()
             # Cookie
