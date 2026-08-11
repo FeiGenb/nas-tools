@@ -1,6 +1,8 @@
 import json
 import os.path
 
+import hashlib
+
 from apscheduler.job import Job
 from copy import deepcopy
 from threading import Event
@@ -419,13 +421,18 @@ class TorrentTransfer(_IPluginModule):
             success = 0
             fail = 0
             for hash_item in hash_strs:
-                # 检查种子文件是否存在
+                # 检查种子文件是否存在 / Check if torrent file exists
+                target_hash = hash_item.get('hash')
                 torrent_file = os.path.join(self._fromtorrentpath,
-                                            f"{hash_item.get('hash')}.torrent")
+                                            f"{target_hash}.torrent")
                 if not os.path.exists(torrent_file):
-                    self.error(f"种子文件不存在：{torrent_file}")
-                    fail += 1
-                    continue
+                    # 按 hash 名找不到，扫描目录通过 bdecode 匹配 / Fallback: scan directory and match by info hash
+                    torrent_file = self.__find_torrent_by_hash(target_hash)
+                    if not torrent_file:
+                        self.error(f"种子文件不存在：{target_hash}.torrent")
+                        fail += 1
+                        continue
+                    self.debug(f"通过扫描匹配到种子文件：{torrent_file}")
                 # 查询hash值是否已经在目的下载器中
                 torrent_info = self.downloader.get_torrents(downloader_id=todownloader,
                                                             ids=[hash_item.get('hash')])
@@ -600,6 +607,30 @@ class TorrentTransfer(_IPluginModule):
             if self.__can_seeding(torrent, downloader_type):
                 can_seeding_torrents.append(hash_str)
         return can_seeding_torrents
+
+    def __find_torrent_by_hash(self, target_hash):
+        """
+        在种子目录中扫描所有 .torrent 文件，通过 bdecode 计算 info hash 来匹配 / 
+        Scan torrent directory and match by computing info hash from bdecode
+        """
+        if not os.path.isdir(self._fromtorrentpath):
+            return None
+        target = target_hash.lower()
+        for fname in os.listdir(self._fromtorrentpath):
+            if not fname.endswith('.torrent'):
+                continue
+            fpath = os.path.join(self._fromtorrentpath, fname)
+            try:
+                with open(fpath, 'rb') as f:
+                    data = bdecode(f.read())
+                info = data.get(b'info', data.get('info'))
+                if info:
+                    computed = hashlib.sha1(bencode(info)).hexdigest().lower()
+                    if computed == target:
+                        return fpath
+            except Exception:
+                continue
+        return None
 
     @staticmethod
     def __get_hash(torrent, dl_type):
